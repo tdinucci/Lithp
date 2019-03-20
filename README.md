@@ -27,7 +27,8 @@ At the moment it can execute programs like the one shown below.
 (call countdown(5 1))
 ```
 #### Output
-```The factorial of 10 is 3628800
+```
+The factorial of 10 is 3628800
 5
 4
 3
