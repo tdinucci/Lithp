@@ -48,15 +48,6 @@ namespace Lithp
             }
         }
 
-//        private FunctionExpression EatExpression()
-//        {
-//            var token = _lexer.Eat();
-//            if (token.Kind != TokenKind.Identifier)
-//                throw new InvalidOperationException($"Expected identifier but encountered '{token}'");
-//
-//            return EatExpression((IdentifierToken) token);
-//        }
-
         private LithpList EatList()
         {
             var token = _lexer.Eat();
@@ -93,41 +84,5 @@ namespace Lithp
 
             throw new InvalidOperationException("Statement not closed");
         }
-
-        /*
-        private FunctionExpression EatExpression(IdentifierToken identifierToken)
-        {
-            var function = _sysFuncs.Get(identifierToken.Value);
-
-            var args = new List<Expression>();
-            IToken token;
-            do
-            {
-                token = _lexer.Eat();
-                switch (token.Kind)
-                {
-                    case TokenKind.StartExpression:
-                        args.Add(EatExpression());
-                        break;
-
-                    case TokenKind.EndExpression:
-                        return new FunctionExpression(_scopeManager, identifierToken, function, args.ToArray());
-
-                    case TokenKind.DoubleLiteral:
-                    case TokenKind.IntegerLiteral:
-                    case TokenKind.StringLiteral:
-                    case TokenKind.Identifier:
-                        args.Add(new Expression(_scopeManager, token));
-                        break;
-
-                    default:
-                        throw new InvalidOperationException($"Unexpected token: {token}");
-
-                }
-            } while (token.Kind != TokenKind.Eof);
-
-            throw new InvalidOperationException("Statement not closed");
-        }
-        */
     }
 }
