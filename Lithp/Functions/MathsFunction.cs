@@ -13,13 +13,13 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
             double result = 0;
             var isDoubleResult = false;
             for (var i = 0; i < args.Length; i++)
             {
-                var arg = args[i];
+                var arg = args[i]();
                 switch (arg)
                 {
                     case int intVal:

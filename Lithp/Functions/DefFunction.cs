@@ -15,26 +15,18 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            if (args[0] is Expression decExpression)
+            var arg1 = args[0]();
+            if (arg1 is string varName)
             {
-                if (decExpression.Token is IdentifierToken idToken)
-                {
-                    object value = null;
-                    if (args[1] is Expression valExpression)
-                        value = valExpression.Evaluate();
-                    else if (args[1] is LithpList valList)
-                        value = valList.Evaluate();
-                    else
-                        throw new InvalidOperationException("Expected 2nd argument to be an expression");
+                var varValue = args[1]();
 
-                    ScopeManager.GetCurrentScope().Add(idToken.Value, value);
-                    return null;
-                }
+                ScopeManager.Add(varName, varValue);
+                return null;
             }
 
-            throw new InvalidOperationException("Expected 1st arg to be an identifier but");
+            throw new InvalidOperationException($"Expected 1st arg to be an identifier but it was '{arg1}'");
         }
     }
 }

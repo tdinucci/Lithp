@@ -17,6 +17,6 @@ namespace Lithp.Functions
             ScopeManager = scopeManager ?? throw new ArgumentNullException(nameof(scopeManager));
         }
 
-        public abstract object Execute(object[] args);
+        public abstract object Execute(Func<object>[] args);
     }
 }

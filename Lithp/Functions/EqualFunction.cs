@@ -1,3 +1,5 @@
+using System;
+
 namespace Lithp.Functions
 {
     public class EqualFunction : EqualityFunction
@@ -8,9 +10,9 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            return Equals(args[0], args[1]);
+            return Equals(args[0](), args[1]());
         }
     }
 }

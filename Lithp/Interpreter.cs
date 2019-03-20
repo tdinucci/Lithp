@@ -1,88 +1,109 @@
 using System;
-using System.Collections.Generic;
+using Lithp.Functions;
 using Lithp.Lex;
+using Lithp.SExp;
 
 namespace Lithp
 {
     public class Interpreter
     {
-        private readonly Lexer _lexer;
-
-        private readonly SystemFunctionTable _sysFuncs;
+        private readonly Parser _parser;
         private readonly ScopeManager _scopeManager;
+        private readonly SystemFunctionTable _systemFunctionTable;
+        private readonly CustomFunctionTable _customFunctionTable;
 
-        public Interpreter(Lexer lexer, Scope globalScope)
+        public Interpreter(Parser parser, ScopeManager scopeManager, SystemFunctionTable systemFunctionTable,
+            CustomFunctionTable customFunctionTable)
         {
-            if (globalScope == null) throw new ArgumentNullException(nameof(globalScope));
-
-            _lexer = lexer ?? throw new ArgumentNullException(nameof(lexer));
-            _scopeManager = new ScopeManager(globalScope, new Stack<Scope>());
-
-            _sysFuncs = new SystemFunctionTable(_scopeManager);
+            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _scopeManager = scopeManager ?? throw new ArgumentNullException(nameof(scopeManager));
+            _systemFunctionTable = systemFunctionTable ?? throw new ArgumentNullException(nameof(systemFunctionTable));
+            _customFunctionTable = customFunctionTable ?? throw new ArgumentNullException(nameof(customFunctionTable));
         }
 
-        public void Run()
+        public void Execute()
         {
-            IToken token = null;
-            try
+            SExp.SExp exp;
+            while ((exp = _parser.Eat()) != null)
             {
-                do
-                {
-                    token = _lexer.Eat();
+                if (!(exp is FunctionSExp fexp))
+                    throw new InvalidOperationException($"Expected a function expression but encountered: {exp}");
 
-                    if (token.Kind != TokenKind.Eof)
+                ExecuteFunction(fexp);
+            }
+        }
+
+        private object ExecuteFunction(FunctionSExp fexp)
+        {
+            var args = new Func<object>[fexp.Nodes.Count];
+            if (fexp.Nodes.Count > 0)
+            {
+                for (var i = 0; i < fexp.Nodes.Count; i++)
+                {
+                    var node = fexp.Nodes[i];
+
+                    Func<object> nodeValueFunc;
+                    switch (node)
                     {
-                        if (token.Kind != TokenKind.StartExpression)
-                            throw new InvalidOperationException(
-                                $"Expected start of expression but encountered '{token}'");
+                        case FunctionSExp childFExp:
+                            nodeValueFunc = () => ExecuteFunction(childFExp);
+                            break;
 
-                        var list = EatList();
-                        list.Evaluate();
+                        case Atom childAtom:
+                            if (!(fexp.Function is DefFunction) && !(fexp.Function is DefFuncFunction) &&
+                                !(fexp.Function is ParamsFunction) &&
+                                childAtom.Token is IdentifierToken idToken)
+                            {
+                                nodeValueFunc = () =>
+                                {
+                                    if (_scopeManager.Contains(idToken.Value))
+                                        return _scopeManager.Get(idToken.Value);
+
+                                    if (_customFunctionTable.Contains(idToken.Value))
+                                        return _customFunctionTable.GetCustomFunction(idToken.Value);
+
+                                    if (_systemFunctionTable.TryGet(idToken.Value, out var sysFunc))
+                                        return sysFunc;
+
+                                    throw new InvalidOperationException($"Unknown identifier '{idToken}'");
+                                };
+                            }
+                            else
+                                nodeValueFunc = () => childAtom.Token.Value;
+
+                            break;
+
+                        // this will be an empty parameter list
+                        case SExp.SExp _:
+                            nodeValueFunc = () => new object[0];
+                            break;
+
+                        default:
+                            throw new InvalidOperationException($"Expected a function or atom but encountered: {node}");
                     }
-                } while (token.Kind != TokenKind.Eof);
+
+                    args[i] = nodeValueFunc;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Execution error: {ex.Message} [{token}]");
-                throw;
-            }
+
+            CheckCallingArgs(fexp.Function, args);
+
+            return fexp.Function.Execute(args);
         }
 
-        private LithpList EatList()
+        private void CheckCallingArgs(Function function, Func<object>[] args)
         {
-            var token = _lexer.Eat();
-            if (token is IdentifierToken idToken && _sysFuncs.TryGet(idToken.Value, out var sysFunc))
-                token = _lexer.Eat();
-            else
-                sysFunc = _sysFuncs.Get("list");
-
-            var result = new LithpList(sysFunc);
-            do
+            if (args.Length < function.MinArgCount.GetValueOrDefault(0))
             {
-                switch (token.Kind)
-                {
-                    case TokenKind.StartExpression:
-                        result.Add(new LithpListItem(EatList()));
-                        break;
-                    case TokenKind.EndExpression:
-                        return result;
+                throw new InvalidOperationException(
+                    $"'{function.Identifier}' expects at least {function.MinArgCount} arguments but {args.Length} where provided");
+            }
 
-                    case TokenKind.DoubleLiteral:
-                    case TokenKind.IntegerLiteral:
-                    case TokenKind.StringLiteral:
-                    case TokenKind.Identifier:
-                        result.Add(new LithpListItem(new Expression(_scopeManager, token)));
-                        break;
-
-                    default:
-                        throw new InvalidOperationException($"Unexpected token: {token}");
-                }
-
-                token = _lexer.Eat();
-
-            } while (token.Kind != TokenKind.Eof);
-
-            throw new InvalidOperationException("Statement not closed");
+            if (args.Length > function.MaxArgCount.GetValueOrDefault(int.MaxValue))
+            {
+                throw new InvalidOperationException(
+                    $"'{function.Identifier}' expects at most {function.MaxArgCount} arguments but {args.Length} where provided");
+            }
         }
     }
 }

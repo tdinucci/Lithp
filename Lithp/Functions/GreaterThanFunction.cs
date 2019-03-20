@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 
 namespace Lithp.Functions
@@ -10,9 +11,9 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            var result = Comparer.Default.Compare(args[0], args[1]);
+            var result = Comparer.Default.Compare(args[0](), args[1]());
             return result > 0;
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace Lithp.Functions
@@ -12,10 +13,14 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
             var result = args
-                .Select(a => a == null ? string.Empty : a.ToString())
+                .Select(a =>
+                {
+                    var funcResult = a();
+                    return funcResult == null ? string.Empty : funcResult.ToString();
+                })
                 .Aggregate(string.Empty, (c, n) => c + n);
 
             return result;

@@ -18,16 +18,16 @@ namespace Lithp.Functions
             _customFunctionTable = customFunctionTable ?? throw new ArgumentNullException(nameof(customFunctionTable));
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            if (args[0] is Expression funcExp && funcExp.Token is IdentifierToken funcId &&
-                args[1] is LithpList funcArgs && args[2] is LithpList funcBody)
-            {
-                _customFunctionTable.Add(funcId.Value, new[] {funcArgs, funcBody});
-                return null;
-            }
+            var funcName = args[0]() as string;
+            var funcParams = args[1]() as string[];
+            var funcBody = args[2];
 
-            throw new InvalidOperationException($"Invalid function definition '{args[0]}'");
+            var customFunc = new CustomFunction(funcName, funcParams, funcBody);
+            _customFunctionTable.Add(customFunc);
+
+            return null;
         }
     }
 }

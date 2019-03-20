@@ -12,9 +12,9 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            Console.WriteLine(args[0]);
+            Console.WriteLine(args[0]());
             return null;
         }
     }

@@ -1,62 +1,69 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Lithp.Lex;
 
 namespace Lithp.Functions
 {
     public class CallFunction : Function
     {
-        private readonly CustomFunctionTable _customFunctionTable;
-
         public override bool DeferChildExecution { get; } = true;
 
         public override string Identifier { get; } = "call";
         public override int? MinArgCount { get; } = 2;
         public override int? MaxArgCount { get; } = null;
 
-        public CallFunction(ScopeManager scopeManager, CustomFunctionTable customFunctionTable) : base(scopeManager)
+        public CallFunction(ScopeManager scopeManager) : base(scopeManager)
         {
-            _customFunctionTable = customFunctionTable ?? throw new ArgumentNullException(nameof(customFunctionTable));
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            var idToken = (IdentifierToken) ((Expression) args[0]).Token;
+            var func = (CustomFunction) args[0]();
 
-            var funcList = _customFunctionTable.Get(idToken.Value);
-            var funcParams = funcList[0];
-            var funcBody = funcList[1];
+            try
+            {
+                var callArgsObj = args[1]();
+                if (!(callArgsObj is object[] callArgs))
+                {
+                    throw new InvalidOperationException(
+                        $"Malformed called to '{func.Name}'.  Expected a list of arguments but received '{callArgsObj}'");
+                }
 
-            InitialiseLocals((LithpList)args[1], funcParams);
+                if (callArgs.Length != func.Parameters.Length)
+                {
+                    throw new InvalidOperationException(
+                        $"'{func.Name}' expects {func.Parameters.Length} arguments but is being called with {callArgs.Length}");
+                }
 
-            funcBody.Evaluate();
+                InitialiseLocals(func.Parameters, callArgs);
 
-            object result = null;
-            if (ScopeManager.GetCurrentScope().Contains(ReturnFunction.ReturnVarName))
-                result = ScopeManager.GetCurrentScope().Get(ReturnFunction.ReturnVarName);
-            
-            ScopeManager.LeaveScope();
+                func.Execute();
 
-            return result;
+                object result = null;
+                if (ScopeManager.Contains(ReturnFunction.ReturnVarName))
+                    result = ScopeManager.Get(ReturnFunction.ReturnVarName);
+
+                ScopeManager.LeaveScope();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error executing function '{func.Name}': {ex.Message}");
+            }
         }
 
-        private void InitialiseLocals(LithpList args, LithpList funcParams)
+        private void InitialiseLocals(string[] parameters, object[] arguments)
         {
             var vars = new Dictionary<string, object>();
-            for (var i = 0; i < args.Items.Count; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var paramName = (IdentifierToken) ((Expression) funcParams.Items[i].Value()).Token;
-
-                object argValue = args.Items[i].Evaluate();
-
-                vars.Add(paramName.Value, argValue);
+                vars.Add(parameters[i], arguments[i]);
             }
 
             ScopeManager.EnterScope();
 
             foreach (var variable in vars)
-                ScopeManager.GetCurrentScope().Add(variable.Key, variable.Value);
+                ScopeManager.Add(variable.Key, variable.Value);
         }
     }
 }

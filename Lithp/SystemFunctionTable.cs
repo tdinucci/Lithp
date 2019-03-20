@@ -8,9 +8,8 @@ namespace Lithp
     {
         private readonly Dictionary<string, Function> _functions;
 
-        public SystemFunctionTable(ScopeManager scopeManager)
+        public SystemFunctionTable(ScopeManager scopeManager, CustomFunctionTable customFunctionTable)
         {
-            var customFunctionTable = new CustomFunctionTable();
             _functions = new Dictionary<string, Function>
             {
                 {"+", new AddFunction(scopeManager)},
@@ -25,9 +24,10 @@ namespace Lithp
                 {"concat", new ConcatFunction(scopeManager)},
                 {"def", new DefFunction(scopeManager)},
                 {"func", new DefFuncFunction(scopeManager, customFunctionTable)},
-                {"call", new CallFunction(scopeManager, customFunctionTable)},
+                {"call", new CallFunction(scopeManager)},
                 {"if", new IfFunction(scopeManager)},
                 {"list", new ListFunction(scopeManager)},
+                {"params", new ParamsFunction(scopeManager)},
                 {"return", new ReturnFunction(scopeManager)}
             };
         }

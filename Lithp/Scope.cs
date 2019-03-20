@@ -10,7 +10,7 @@ namespace Lithp
         private readonly Dictionary<string, object> _scopeVars = new Dictionary<string, object>();
 
         public int No { get; } = _no++;
-
+        
         public bool Contains(string name)
         {
             return _scopeVars.ContainsKey(name);

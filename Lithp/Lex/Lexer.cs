@@ -4,11 +4,12 @@ namespace Lithp.Lex
 {
     public class Lexer
     {
-        private int _currLine;
-        private int _currCol;
         private int _currIndex;
         private readonly ReadOnlyMemory<char> _source;
 
+        public int CurrLine { get; private set; }
+        public int CurrCol { get; private set; }
+        
         public Lexer(char[] source)
         {
             _source = new ReadOnlyMemory<char>(source);
@@ -23,11 +24,11 @@ namespace Lithp.Lex
                 {
                     if (ch == '\n')
                     {
-                        _currLine++;
-                        _currCol = 0;
+                        CurrLine++;
+                        CurrCol = 0;
                     }
                     else
-                        _currCol++;
+                        CurrCol++;
 
                     if (_currIndex == span.Length - 1)
                     {
@@ -49,10 +50,10 @@ namespace Lithp.Lex
                 ? new EofToken()
                 : Eat(span.Slice(_currIndex));
 
-            token.Line = _currLine;
-            token.Column = _currCol;
+            token.Line = CurrLine;
+            token.Column = CurrCol;
 
-            _currCol += token.Length;
+            CurrCol += token.Length;
 
             // this will always be one more than the actual index
             _currIndex += token.Length;

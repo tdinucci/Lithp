@@ -14,10 +14,10 @@ namespace Lithp.Functions
         {
         }
 
-        public override object Execute(object[] args)
+        public override object Execute(Func<object>[] args)
         {
-            var result = args[0];
-            ScopeManager.GetCurrentScope().Add(ReturnVarName, result);
+            var result = args[0]();
+            ScopeManager.Add(ReturnVarName, result);
             return result;
         }
     }
