@@ -1,5 +1,5 @@
 # Lithp
-This is a toy interpreter for a Lisp-like language.  It's currently a work in progress (and at a very early stage) and will probably never become production ready.  Parsing errors are currently next to useless.
+This is a toy interpreter for a Lisp-like language.  It's currently a work in progress (and at a very early stage) and will probably never become production ready. 
 
 At the moment it can execute programs like the one shown below.
 
@@ -7,14 +7,14 @@ At the moment it can execute programs like the one shown below.
 ```lisp
 (def finput 10)
 
-(func factorial (n)
+(func factorial (params n)
   (if (= n 0)
       (return 1)
       (return (* n (call factorial((- n 1))))) 
     ) 
 )
 
-(func countdown(from to)
+(func countdown(params from to)
 (
     (print from)
     (if (> from to) 
