@@ -35,8 +35,7 @@ jobs:
 workflows:
   setup:
     when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - setup
 
@@ -48,6 +47,9 @@ workflows:
               only: master
 
   say-hello-pr:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - say-hello-pr:
           filters:
