@@ -5,54 +5,68 @@ orbs:
   continuation: circleci/continuation@1.0.0
 
 jobs:
-  setup: 
+  setup-pr: 
     docker:
       - image: cimg/base:stable
     steps:
-      - checkout
       - run:
           name: setup
-          command: echo "In setup phase"
+          command: echo "In setup phase - for PR"
+      - continuation/continue:
+          configuration_path: ./pr-config.yml
 
-  say-hello-master:
+  setup-master: 
     docker:
       - image: cimg/base:stable
     steps:
-      - checkout
       - run:
-          name: Say hello
-          command: echo "Hello - on master branch"
-
-  say-hello-pr:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - run:
-          name: Say hello
-          command: "echo Hello - from PR"
+          name: setup
+          command: echo "In setup phase - for master"
+      - continuation/continue:
+          configuration_path: ./master-config.yml
 
 workflows:
-  setup:
+  setup-pr:
     when:
       not:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - setup
-
-  say-hello-master:
-    jobs:
-      - say-hello-master:
+      - setup-pr:
           filters:
-            branches:
-              only: master
+              branches:
+                only: master
 
-  say-hello-pr:
+  setup-master:
     when:
-      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
-      - say-hello-pr:
+      - setup-master:
           filters:
-            branches:
-              ignore: master
+              branches:
+                ignore: master
+
+  # schedule-1:
+  #   when:
+  #     equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - schedule-1
+
+  # schedule-2:
+  #   when:
+  #     equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - schedule-2
+
+  # schedule-3:
+  #   when:
+  #     equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - schedule-3
+
+  # schedule-4:
+  #   when:
+  #     equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - schedule-4
 
