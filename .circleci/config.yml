@@ -13,7 +13,7 @@ jobs:
           name: setup
           command: echo "In setup phase - for PR"
       - continuation/continue:
-          configuration_path: ./pr-config.yml
+          configuration_path: .circleci/pr-config.yml
 
   setup-master: 
     docker:
@@ -23,7 +23,7 @@ jobs:
           name: setup
           command: echo "In setup phase - for master"
       - continuation/continue:
-          configuration_path: ./master-config.yml
+          configuration_path: .circleci/master-config.yml
 
 workflows:
   setup-pr:
@@ -34,7 +34,7 @@ workflows:
       - setup-pr:
           filters:
               branches:
-                only: master
+                ignore: master
 
   setup-master:
     when:
@@ -44,7 +44,7 @@ workflows:
       - setup-master:
           filters:
               branches:
-                ignore: master
+                only: master
 
   # schedule-1:
   #   when:
