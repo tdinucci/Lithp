@@ -9,6 +9,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: setup
           command: echo "In setup phase - for PR"
@@ -19,6 +20,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: setup
           command: echo "In setup phase - for master"
