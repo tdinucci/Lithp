@@ -96,25 +96,33 @@ workflows:
 
   schedule-1:
     when:
-      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ schedule-1, << pipeline.schedule.name >> ]
     jobs:
       - say-hello-schedule-1
 
   schedule-2:
     when:
-      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ schedule-2, << pipeline.schedule.name >> ]
     jobs:
       - say-hello-schedule-2
 
   schedule-3:
     when:
-      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ schedule-3, << pipeline.schedule.name >> ]
     jobs:
       - say-hello-schedule-3
 
   schedule-4:
     when:
-      equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - equal: [ schedule-4, << pipeline.schedule.name >> ]
     jobs:
       - say-hello-schedule-4
 
