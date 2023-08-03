@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Say hello
+          name: Say hello - PR
           command: "echo Hello - from PR"
 
 workflows:

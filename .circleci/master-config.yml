@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Say hello
+          name: Say hello - master
           command: "echo Hello - from master"
 
 workflows:

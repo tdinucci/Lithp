@@ -14,7 +14,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: setup
+          name: setup - pr
           command: echo "In setup phase - for PR"
       - continuation/continue:
           configuration_path: .circleci/pr-config.yml
@@ -25,7 +25,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: setup
+          name: setup - master
           command: echo "In setup phase - for master"
       - continuation/continue:
           configuration_path: .circleci/master-config.yml
