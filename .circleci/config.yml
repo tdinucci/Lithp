@@ -12,7 +12,6 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      - checkout
       - run:
           name: setup - pr
           command: echo "In setup phase - for PR"
