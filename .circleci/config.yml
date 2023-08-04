@@ -12,6 +12,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+      - checkout
       - run:
           name: setup - pr
           command: echo "In setup phase - for PR"
@@ -113,15 +114,15 @@ workflows:
     jobs:
       - say-hello-master-1
 
-  merge-to-master-wf-2:
-    when:
-      and:
-        - equal: [ master, << pipeline.git.branch >> ]
-        - not:
-            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - say-hello-master-2-1
-      - say-hello-master-2-2
+  # merge-to-master-wf-2:
+  #   when:
+  #     and:
+  #       - equal: [ master, << pipeline.git.branch >> ]
+  #       - not:
+  #           equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+  #   jobs:
+  #     - say-hello-master-2-1
+  #     - say-hello-master-2-2
 
   # ********** SCHEDULED WORKFLOW **********
 
