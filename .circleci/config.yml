@@ -113,6 +113,8 @@ workflows:
             equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - say-hello-master-1
+      - say-hello-master-2-1
+      - say-hello-master-2-2
 
   # merge-to-master-wf-2:
   #   when:
