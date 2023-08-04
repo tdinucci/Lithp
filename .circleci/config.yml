@@ -6,7 +6,7 @@ orbs:
 
 jobs:
 
-  # ********** SETUP JOBS ********** 
+  # ********** SETUP ********** 
 
   setup-pr: 
     docker:
@@ -19,16 +19,34 @@ jobs:
       - continuation/continue:
           configuration_path: .circleci/pr-config.yml
 
-  setup-master: 
+  # ********** MERGE TO MASTER JOBS **********
+
+  say-hello-master-1:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
       - run:
-          name: setup - master
-          command: echo "In setup phase - for master"
-      - continuation/continue:
-          configuration_path: .circleci/master-config.yml
+          name: Say hello - master 1
+          command: "echo Hello - merge from master 1"
+
+  say-hello-master-2-1:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Say hello - master - workflow 2 - job 1
+          command: "echo Hello - merge from master - workflow 2, job 1"
+
+  say-hello-master-2-2:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Say hello - master - workflow 2 - job 2
+          command: "echo Hello - merge from master - workflow 2, job 2"
 
   # ********** SCHEDULED JOBS **********
 
@@ -74,8 +92,11 @@ workflows:
 
   setup-pr:
     when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - not:
+            equal: [ master, << pipeline.git.branch >> ]
+        - not:
+            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - setup-pr:
           filters:
@@ -91,6 +112,27 @@ workflows:
           filters:
               branches:
                 only: master
+
+  # ********** MERGE TO MASTER WORKFLOW **********
+
+  merge-to-master-wf-1:
+    when:
+      and:
+        - equal: [ master, << pipeline.git.branch >> ]
+        - not:
+            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+    jobs:
+      - say-hello-master-1
+
+  merge-to-master-wf-2:
+    when:
+      and:
+        - equal: [ master, << pipeline.git.branch >> ]
+        - not:
+            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+    jobs:
+      - say-hello-master-2-1
+      - say-hello-master-2-2
 
   # ********** SCHEDULED WORKFLOW **********
 
