@@ -103,16 +103,6 @@ workflows:
               branches:
                 ignore: master
 
-  setup-master:
-    when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - setup-master:
-          filters:
-              branches:
-                only: master
-
   # ********** MERGE TO MASTER WORKFLOW **********
 
   merge-to-master-wf-1:
